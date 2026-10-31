@@ -32,11 +32,11 @@ Copy-Item apps/transkrip/.env.example apps/transkrip/.env
 
 Isi placeholder dalam tiga `.env` **secara lokal** sebelum menjalankan service. Gunakan `JWT_SECRET` dan `GATEWAY_SECRET` yang sama pada ketiga proses; gunakan `SERVICE_NILAI_CLIENT_ID` yang sama pada ketiganya; cocokkan `SERVICE_NILAI_CLIENT_SECRET` antara Gateway dan Service Nilai. Ketiga secret tersebut harus berupa nilai nyata sesuai panjang minimum yang diminta kode (32 karakter untuk secret). Jangan commit `.env` atau menayangkan nilainya. URL dan port dalam contoh adalah:
 
-| Proses | File contoh | Variabel koneksi utama |
-| --- | --- | --- |
-| Gateway | `apps/gateway/.env.example` | `PORT=3000`, `HOST=127.0.0.1`, `NILAI_SERVICE_URL=http://127.0.0.1:3001`, `TRANSKRIP_SERVICE_URL=http://127.0.0.1:3002` |
-| Nilai | `apps/nilai/.env.example` | `PORT=3001`, `HOST=127.0.0.1`, `GATEWAY_URL=http://127.0.0.1:3000` |
-| Transkrip | `apps/transkrip/.env.example` | `PORT=3002`, `HOST=127.0.0.1` |
+| Proses    | File contoh                   | Variabel koneksi utama                                                                                                  |
+| --------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Gateway   | `apps/gateway/.env.example`   | `PORT=3000`, `HOST=127.0.0.1`, `NILAI_SERVICE_URL=http://127.0.0.1:3001`, `TRANSKRIP_SERVICE_URL=http://127.0.0.1:3002` |
+| Nilai     | `apps/nilai/.env.example`     | `PORT=3001`, `HOST=127.0.0.1`, `GATEWAY_URL=http://127.0.0.1:3000`                                                      |
+| Transkrip | `apps/transkrip/.env.example` | `PORT=3002`, `HOST=127.0.0.1`                                                                                           |
 
 Untuk `GATEWAY_URL`, HTTP hanya diterima pada alamat loopback (`127.0.0.1` atau `[::1]`); host lain harus memakai HTTPS. Permintaan internal Service Nilai ke Gateway tidak mengikuti redirect. `npm run seed` tetap dapat berjalan tanpa `.env` karena script memakai `--env-file-if-exists`.
 
@@ -84,12 +84,12 @@ curl.exe -i http://127.0.0.1:3002/transkrip/2024051
 
 Verifikasi dilakukan pada **salinan proyek terisolasi**, memakai database dan konfigurasi pengujian milik salinan. Hasil berikut berasal dari laporan eksekusi sebelumnya; tidak ada pengujian ulang atau perubahan database dalam pembaruan dokumentasi ini.
 
-| Tahap | Hasil tercatat | Makna |
-| --- | --- | --- |
-| Verifikasi integrasi awal | **109 kasus HTTP sesuai ekspektasi**, termasuk pemeriksaan respons/data | Mencakup autentikasi, refresh/logout, device, role/kepemilikan, default deny, token service, akses langsung, finalisasi, dan gangguan sinkronisasi. |
-| Seluruh pemeriksaan runtime awal | **138 PASS, 1 FAIL** dari 139 pemeriksaan | Angka ini mencakup pemeriksaan non-HTTP; kegagalan awal adalah pelaporan startup saat port sibuk. |
-| Regresi startup setelah perbaikan | **3 PASS, 0 FAIL**: Gateway, Service Nilai, Service Transkrip | Startup normal berhasil. Saat port sama sudah dipakai, instance kedua melaporkan `EADDRINUSE`, exit **1**, tanpa pesan “aktif”; instance pertama tetap berjalan. Semua proses uji dihentikan dan port 3000–3002 dibersihkan. |
-| Script repository `npm test` saat verifikasi terdahulu | Exit **0**, **0 kasus uji**, **0 suite** | Tes audit ditambahkan kemudian; kasus HTTP dan regresi startup berasal dari harness terpisah. |
+| Tahap                                                  | Hasil tercatat                                                          | Makna                                                                                                                                                                                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Verifikasi integrasi awal                              | **109 kasus HTTP sesuai ekspektasi**, termasuk pemeriksaan respons/data | Mencakup autentikasi, refresh/logout, device, role/kepemilikan, default deny, token service, akses langsung, finalisasi, dan gangguan sinkronisasi.                                                                          |
+| Seluruh pemeriksaan runtime awal                       | **138 PASS, 1 FAIL** dari 139 pemeriksaan                               | Angka ini mencakup pemeriksaan non-HTTP; kegagalan awal adalah pelaporan startup saat port sibuk.                                                                                                                            |
+| Regresi startup setelah perbaikan                      | **3 PASS, 0 FAIL**: Gateway, Service Nilai, Service Transkrip           | Startup normal berhasil. Saat port sama sudah dipakai, instance kedua melaporkan `EADDRINUSE`, exit **1**, tanpa pesan “aktif”; instance pertama tetap berjalan. Semua proses uji dihentikan dan port 3000–3002 dibersihkan. |
+| Script repository `npm test` saat verifikasi terdahulu | Exit **0**, **0 kasus uji**, **0 suite**                                | Tes audit ditambahkan kemudian; kasus HTTP dan regresi startup berasal dari harness terpisah.                                                                                                                                |
 
 Perbaikan startup berada pada ketiga `apps/*/src/server.js`: pesan “aktif” hanya muncul pada event `listening`; handler `error` mencatat kode kegagalan, menutup database, dan menetapkan exit code nonzero. Pemeriksaan sintaks ketiga berkas setelah perbaikan exit 0. Hasil 3 PASS merupakan pengujian lanjutan khusus startup; hasil historis 138 PASS/1 FAIL tetap dicatat dan tidak diganti atau dijumlahkan sebagai satu suite baru.
 
@@ -99,11 +99,11 @@ Pada audit alur normal, **23 kelompok policy allow** memiliki UUID yang menghubu
 
 Kedua percobaan gangguan memakai snapshot salinan sebelum finalisasi yang sama:
 
-| Kondisi yang diuji | Respons finalisasi | Keadaan database salinan |
-| --- | --- | --- |
-| Alur berhasil untuk dua kelas | HTTP **200**, `confirmed` | Dua kelas final, empat entri transkrip. |
-| Service Transkrip tidak tersedia | HTTP **502**, `unknown` | Satu kelas tetap final, **nol entri transkrip**. |
-| Respons terputus setelah commit sinkronisasi | HTTP **502**, `unknown` | Satu kelas final, **dua entri transkrip sudah tersimpan**. |
+| Kondisi yang diuji                           | Respons finalisasi        | Keadaan database salinan                                   |
+| -------------------------------------------- | ------------------------- | ---------------------------------------------------------- |
+| Alur berhasil untuk dua kelas                | HTTP **200**, `confirmed` | Dua kelas final, empat entri transkrip.                    |
+| Service Transkrip tidak tersedia             | HTTP **502**, `unknown`   | Satu kelas tetap final, **nol entri transkrip**.           |
+| Respons terputus setelah commit sinkronisasi | HTTP **502**, `unknown`   | Satu kelas final, **dua entri transkrip sudah tersimpan**. |
 
 Dengan demikian, gangguan sinkronisasi dapat meninggalkan kelas final tanpa entri transkrip. **Status respons `unknown` sendiri tidak memastikan apakah commit sinkronisasi terjadi atau tidak.** Belum tersedia retry atau rekonsiliasi otomatis; pemeriksaan keadaan database secara manual masih diperlukan untuk mengetahui hasilnya.
 
@@ -115,11 +115,11 @@ Sumber angka: artefak di luar repository pada folder verifikasi `zero-trust-veri
 
 Setiap rangkaian berikut memiliki cakupan dan penyiapan sendiri. **Hasil antar-run tidak dijumlahkan sebagai jumlah kasus unik.** Run sebelumnya sekitar 05.23 WIB mencatat **77 HTTP PASS**, dengan **10 kasus HTTP dan 1 unit batas jam NOT_RUN** karena jam akses belum terbuka dan unit batas jam belum dijalankan.
 
-| Rangkaian | Hasil yang diamati | Cakupan dan konteks |
-| --- | --- | --- |
-| Run lanjutan pada jam akses nyata, sekitar 10.28–10.29 WIB | **10 kasus HTTP yang sebelumnya NOT_RUN menjadi PASS**; run lengkap mencatat **29 HTTP PASS, 0 FAIL** | Memakai salinan terisolasi. Alur perubahan nilai, finalisasi melalui Gateway, pembacaan transkrip, penolakan akses, serta gangguan sinkronisasi diuji. Sebagian request adalah penyiapan/pemeriksaan pendukung yang dapat berulang dari run sebelumnya. |
-| Audit kesesuaian terisolasi, sekitar 10.41 WIB | **33 HTTP PASS, 0 FAIL** dan **4 tes repository PASS** | Seed baru pada salinan; seluruh sembilan endpoint tercakup. Empat tes repository terdiri atas tiga tes audit dan satu tes migrasi sementara, terpisah dari hitungan HTTP. |
-| Pengujian manual Postman pada salinan, dilaporkan pengguna pada 31 Oktober 2026 | PUT nilai **85 → 90: 200**; finalisasi `IF-101`: **200**, `transcriptSyncStatus: "confirmed"`; transkrip mahasiswa menampilkan **90**; PUT sesudah finalisasi: **403**; finalisasi ulang: **409** | Hasil manual ini merupakan rangkaian terpisah. Menurut laporan pengguna, database asli tetap: `IF-101` **belum final**, nilai **85**, dan transkrip **kosong**. Pembaruan README ini tidak memeriksa ulang database tersebut. |
+| Rangkaian                                                                       | Hasil yang diamati                                                                                                                                                                                | Cakupan dan konteks                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run lanjutan pada jam akses nyata, sekitar 10.28–10.29 WIB                      | **10 kasus HTTP yang sebelumnya NOT_RUN menjadi PASS**; run lengkap mencatat **29 HTTP PASS, 0 FAIL**                                                                                             | Memakai salinan terisolasi. Alur perubahan nilai, finalisasi melalui Gateway, pembacaan transkrip, penolakan akses, serta gangguan sinkronisasi diuji. Sebagian request adalah penyiapan/pemeriksaan pendukung yang dapat berulang dari run sebelumnya. |
+| Audit kesesuaian terisolasi, sekitar 10.41 WIB                                  | **33 HTTP PASS, 0 FAIL** dan **4 tes repository PASS**                                                                                                                                            | Seed baru pada salinan; seluruh sembilan endpoint tercakup. Empat tes repository terdiri atas tiga tes audit dan satu tes migrasi sementara, terpisah dari hitungan HTTP.                                                                               |
+| Pengujian manual Postman pada salinan, dilaporkan pengguna pada 31 Oktober 2026 | PUT nilai **85 → 90: 200**; finalisasi `IF-101`: **200**, `transcriptSyncStatus: "confirmed"`; transkrip mahasiswa menampilkan **90**; PUT sesudah finalisasi: **403**; finalisasi ulang: **409** | Hasil manual ini merupakan rangkaian terpisah. Menurut laporan pengguna, database asli tetap: `IF-101` **belum final**, nilai **85**, dan transkrip **kosong**. Pembaruan README ini tidak memeriksa ulang database tersebut.                           |
 
 Pada run lanjutan, service tidak tersedia maupun fixture yang tidak membalas sampai timeout menghasilkan **502**, `transcriptSyncStatus: "unknown"`; pemeriksaan database salinan menunjukkan kelas final dengan transkrip kosong. `unknown` tetap tidak memastikan apakah commit terjadi atau gagal pada setiap jenis gangguan. Belum tersedia retry atau rekonsiliasi. **Unit batas jam dan observasi nyata tepat 21.00 WIB tetap belum terverifikasi**; tidak ada perubahan jam OS atau pemalsuan waktu dalam kedua run otomatis terbaru.
 
@@ -131,14 +131,14 @@ Pada database baru, `db/seed.js` membuat password default **`Demo@2026!`** untuk
 
 Pemetaan ini berlaku pada database baru. Database yang sudah berisi ID seed lama tidak otomatis memperbarui username, NIM, atau nama kelas; menjalankan seed ulang juga dapat menambahkan device mahasiswa baru pada pengguna lama. Untuk database yang sudah ada, gunakan prosedur dan skrip transaksi pada [migrasi identitas demo](docs/migrasi_identitas_demo.md), bukan seed ulang. Login mencocokkan username persis; skema tidak memiliki field nama tampilan terpisah.
 
-| Username | Role | User ID | NIM | Device ID | Kelas terkait |
-| --- | --- | --- | --- | --- | --- |
-| `admin` | admin | `admin-01` | — | `DEV-ADM-01` | — |
-| `dosenki` | dosen | `dosen-01` | — | `DEV-DOS-01` | pengampu `IF-101` |
-| `dosenkpt` | dosen | `dosen-02` | — | `DEV-DOS-02` | pengampu `IF-102` |
-| `faisal` | mahasiswa | `mhs-01` | `2024051` | `DEV-MHS-051` | `IF-101`, `IF-102` |
-| `hadi` | mahasiswa | `mhs-02` | `2024052` | `DEV-MHS-052` | `IF-101` |
-| `saik` | mahasiswa | `mhs-03` | `2024053` | `DEV-MHS-053` | `IF-102` |
+| Username   | Role      | User ID    | NIM       | Device ID     | Kelas terkait      |
+| ---------- | --------- | ---------- | --------- | ------------- | ------------------ |
+| `admin`    | admin     | `admin-01` | —         | `DEV-ADM-01`  | —                  |
+| `dosenki`  | dosen     | `dosen-01` | —         | `DEV-DOS-01`  | pengampu `IF-101`  |
+| `dosenkpt` | dosen     | `dosen-02` | —         | `DEV-DOS-02`  | pengampu `IF-102`  |
+| `faisal`   | mahasiswa | `mhs-01`   | `2024051` | `DEV-MHS-051` | `IF-101`, `IF-102` |
+| `hadi`     | mahasiswa | `mhs-02`   | `2024052` | `DEV-MHS-052` | `IF-101`           |
+| `saik`     | mahasiswa | `mhs-03`   | `2024053` | `DEV-MHS-053` | `IF-102`           |
 
 Seed juga memasukkan `grade-001` dan `grade-002` pada `IF-101`, serta `grade-003` dan `grade-004` pada `IF-102`. Kelas awal belum final; nilai dan keanggotaan persisnya dapat dilihat di `db/seed.js`.
 
@@ -150,17 +150,17 @@ Respons JSON kini menyertakan `success` dan `message`, dengan kode `error`, toke
 
 Semua URL klien di bawah memakai `http://127.0.0.1:3000`. Pada route pengguna selain `/auth/*`, kirim `Authorization: Bearer <accessToken>` dan `X-Device-ID` yang terdaftar untuk akun itu. Gateway dan service memeriksa ulang token serta device. Pengecualian adalah sinkronisasi internal, yang memakai token service.
 
-| Endpoint | Pemanggil dan syarat utama | Respons utama sesuai kondisi |
-| --- | --- | --- |
-| `POST /auth/login` | Username/password pada JSON dan `X-Device-ID` terdaftar | 200: access JWT 10 menit dan refresh token 1 hari |
-| `POST /auth/refresh` | JSON `{"refreshToken":"..."}` yang aktif, belum kedaluwarsa/dicabut | 200: access JWT baru |
-| `POST /auth/logout` | JSON `{"refreshToken":"..."}` yang aktif | 204; refresh token dicabut |
-| `POST /auth/service` | Internal Service Nilai: JSON `clientId` dan `clientSecret` dari konfigurasi | 200: JWT `role=service`, `token_use=service`, 5 menit |
-| `GET /nilai` | Mahasiswa: nilai sendiri; dosen: nilai kelas yang diampu | 200: daftar nilai sesuai relasi database |
-| `PUT /nilai/:id` | Dosen pengampu, kelas nilai belum final, waktu akses aktif; JSON `{"gradeValue":"90"}` | 200: nilai yang diperbarui |
-| `POST /kelas/:id/finalisasi` | Dosen pengampu, kelas belum final, waktu akses aktif | 200 jika finalisasi dan sinkronisasi terkonfirmasi |
-| `GET /transkrip/:nim` | Mahasiswa hanya NIM sendiri; admin boleh NIM mahasiswa yang ada | 200: entri transkrip |
-| `POST /transkrip/sinkron` | Hanya token service milik Service Nilai; JSON `{"classId":"IF-101"}` | 200: jumlah entri; dipanggil Service Nilai melalui Gateway |
+| Endpoint                     | Pemanggil dan syarat utama                                                             | Respons utama sesuai kondisi                               |
+| ---------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `POST /auth/login`           | Username/password pada JSON dan `X-Device-ID` terdaftar                                | 200: access JWT 10 menit dan refresh token 1 hari          |
+| `POST /auth/refresh`         | JSON `{"refreshToken":"..."}` yang aktif, belum kedaluwarsa/dicabut                    | 200: access JWT baru                                       |
+| `POST /auth/logout`          | JSON `{"refreshToken":"..."}` yang aktif                                               | 204; refresh token dicabut                                 |
+| `POST /auth/service`         | Internal Service Nilai: JSON `clientId` dan `clientSecret` dari konfigurasi            | 200: JWT `role=service`, `token_use=service`, 5 menit      |
+| `GET /nilai`                 | Mahasiswa: nilai sendiri; dosen: nilai kelas yang diampu                               | 200: daftar nilai sesuai relasi database                   |
+| `PUT /nilai/:id`             | Dosen pengampu, kelas nilai belum final, waktu akses aktif; JSON `{"gradeValue":"90"}` | 200: nilai yang diperbarui                                 |
+| `POST /kelas/:id/finalisasi` | Dosen pengampu, kelas belum final, waktu akses aktif                                   | 200 jika finalisasi dan sinkronisasi terkonfirmasi         |
+| `GET /transkrip/:nim`        | Mahasiswa hanya NIM sendiri; admin boleh NIM mahasiswa yang ada                        | 200: entri transkrip                                       |
+| `POST /transkrip/sinkron`    | Hanya token service milik Service Nilai; JSON `{"classId":"IF-101"}`                   | 200: jumlah entri; dipanggil Service Nilai melalui Gateway |
 
 Waktu akses untuk **perubahan nilai dan finalisasi** ialah `07.00 ≤ waktu < 21.00` dalam zona `Asia/Jakarta`; tepat pukul 21.00 ditolak. Rentang dan zona ini ditetapkan di `shared/config.js`. Route yang tidak dikenal atau gagal policy ditolak. Untuk `GET /nilai`, Gateway menghapus query dan header `X-*` klien; Service Nilai mengambil batas baris dari `sub` JWT terverifikasi dan relasi pengguna/kelas di database. Mahasiswa tidak dapat menentukan NIM lain lewat input, dan dosen tidak dapat memperluas cakupan kelas lewat filter klien.
 
@@ -179,7 +179,7 @@ Jangan tampilkan nilai access/refresh token saat merekam demo. Setelah `POST /ke
 ## Kontrol keamanan, audit, dan batas tahap ini
 
 - Login memverifikasi hash bcrypt dan device terdaftar. Access JWT ditandatangani HS256, memuat `sub`, `role`, dan `token_use`. Refresh token acak disimpan sebagai hash SHA-256, memiliki waktu kedaluwarsa serta status pencabutan.
-- Gateway menerapkan *default deny*, role, device, kepemilikan NIM, relasi dosen pengampu, status kelas, dan jam akses. Kedua service memverifikasi sendiri gateway secret, tanda tangan/masa berlaku JWT, role, dan batas data yang relevan.
+- Gateway menerapkan _default deny_, role, device, kepemilikan NIM, relasi dosen pengampu, status kelas, dan jam akses. Kedua service memverifikasi sendiri gateway secret, tanda tangan/masa berlaku JWT, role, dan batas data yang relevan.
 - Gateway menimpa `X-Gateway-Secret` serta `X-Request-ID` dari klien sebelum proxy. UUID yang dibuat Gateway menghubungkan audit keputusan policy, hasil upstream, dan respons service melalui `request_id=...` pada kolom `reason`.
 - `audit_logs` mencatat waktu, subjek, metode, endpoint kanonik, device, keputusan `allow`/`deny`, serta kode alasan tetap. Password, token, secret, dan body request tidak dimasukkan ke alasan audit.
 - Audit baru yang berhasil disimpan ditampilkan otomatis sebagai satu baris `[AUDIT]` pada terminal, baik melalui `npm start` maupun skrip individual. Prefix `[GATEWAY]`, `[NILAI]`, dan `[TRANSKRIP]` pada `npm start` menunjukkan proses penghasilnya. Baris JSON memuat `waktu` (UTC, sesuai timestamp SQLite), `sumber`, `subjek`, `metode`, `endpoint`, `perangkat`, `keputusan`, dan `alasan`; karakter kontrol di-escape dan panjang field dibatasi hanya pada tampilan.
@@ -188,5 +188,3 @@ Jangan tampilkan nilai access/refresh token saat merekam demo. Setelah `POST /ke
 - Sinkronisasi transkrip memakai transaksi dan `ON CONFLICT ... DO NOTHING` agar pengulangan tidak menggandakan entri.
 - Hasil sinkronisasi dapat berstatus `unknown` saat hasilnya tidak dapat dipastikan sesudah finalisasi. Pengujian membuktikan kelas dapat tetap final tanpa entri transkrip, maupun tetap final dengan entri transkrip yang sudah committed, sementara respons keduanya `unknown`. Belum ada retry, rekonsiliasi, atau `sync_pending`; status ini perlu diperiksa manual. Run lanjutan 31 Oktober 2026 mengamati timeout sekitar lima detik secara end-to-end; ketepatan timeout internal persis lima detik belum dipastikan. Tahap ini juga tidak mensyaratkan pemeriksaan bahwa semua mahasiswa sudah memiliki nilai sebelum finalisasi.
 - Token pengguna **belum terikat secara kriptografis ke device** dan belum ada device attestation. Pemeriksaan device saat ini memakai ID terdaftar pada login dan request pengguna.
-
-Materi tugas yang sudah ada tetap berada di `docs/materi/`. Rencana demonstrasi 7–8 menit ada di [`docs/naskah_demo_video.md`](docs/naskah_demo_video.md).
