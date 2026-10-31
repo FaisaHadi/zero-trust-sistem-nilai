@@ -1,0 +1,32 @@
+# Installed dependencies
+/node_modules/
+
+# Local app configuration; keep templates trackable
+/apps/**/.env
+/apps/**/.env.*
+!/apps/**/.env.example
+
+# SQLite database and journal files
+/data/*.sqlite
+/data/*.sqlite-wal
+/data/*.sqlite-shm
+/data/*.sqlite3
+/data/*.sqlite3-wal
+/data/*.sqlite3-shm
+/data/*.db
+/data/*.db-wal
+/data/*.db-shm
+
+# Local logs and coverage output
+*.log
+*.log.*
+/logs/
+/coverage/
+
+# Keep reproducible setup and course materials trackable
+!/package-lock.json
+
+# documents and internal work plans
+/docs/naskah_demo_video.md
+/docs/materi/
+/docs/superpowers/plans/

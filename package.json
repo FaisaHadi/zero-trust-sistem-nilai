@@ -1,0 +1,26 @@
+{
+  "name": "zero-trust-sistem-nilai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.22.1"
+  },
+  "scripts": {
+    "start": "concurrently --kill-others --success first --names GATEWAY,NILAI,TRANSKRIP --prefix-colors cyan,yellow,magenta \"npm run start-gateway\" \"npm run start-nilai\" \"npm run start-transkrip\"",
+    "start-gateway": "node --env-file=apps/gateway/.env apps/gateway/src/server.js",
+    "start-nilai": "node --env-file=apps/nilai/.env apps/nilai/src/server.js",
+    "start-transkrip": "node --env-file=apps/transkrip/.env apps/transkrip/src/server.js",
+    "seed": "node --env-file-if-exists=apps/gateway/.env db/seed.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.3.0",
+    "http-proxy-middleware": "^4.2.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
